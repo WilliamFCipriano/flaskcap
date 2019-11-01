@@ -2,6 +2,7 @@ import configparser
 import redis
 import json
 from .objects import User
+from .constants import SaveState
 
 config = configparser.ConfigParser()
 config.read('config/defaults.ini')
@@ -30,3 +31,5 @@ def _save_user_handler(user):
 
         if user.public_values:
             r.hset('id_to_user_properties', user.get_safe_id(), json.loads(user.public_values))
+
+        user._state = SaveState.clean

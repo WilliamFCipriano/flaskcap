@@ -89,6 +89,11 @@ class User:
         except Exception as ex:
             raise UserInitializationFailure(ex)
 
+    def _clear_id(self):
+        self.id = None
+    # for testability purposes
+
+
 
 class Session:
     """The session object represents the user session. It can validate session_tokens.
