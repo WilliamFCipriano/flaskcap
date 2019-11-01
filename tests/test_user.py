@@ -35,25 +35,22 @@ def test_user_get_safe_id(benchmark):
 def test_user_create_fuzz(username,
                           raw_password,
                           user_id):
+    # fuzz object inputs
     try:
         usr = objects.User(username=username,
                            raw_password=raw_password,
                            user_id=user_id)
 
-        assert (usr.get_safe_id() == user_id)
+        # Check that get_safe_id always returns a string
+        assert (isinstance(usr.get_safe_id(), str))
+        # Check that the user_id remains consistent
+        assert (usr.get_safe_id() == str(user_id))
 
+        # Validate the password
         assert (usr.validate_password_hash(raw_password))
 
-    except exceptions.UserInitializationFailure:
-        pass
-
-    try:
-        usr = objects.User(username=username,
-                           raw_password=raw_password,
-                           user_id=user_id)
-
-        assert (usr.get_safe_id() == user_id)
-        assert (usr.validate_password_hash(raw_password))
-
+    # Only throw UserInitializationFailure for
+    # exceptions when something goes wrong in
+    # during user initialization.
     except exceptions.UserInitializationFailure:
         pass

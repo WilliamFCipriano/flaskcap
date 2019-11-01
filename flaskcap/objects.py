@@ -47,10 +47,10 @@ class User:
         self.raw_password = raw_password
         self.__validate__()
 
-    def get_safe_id(self):
+    def get_safe_id(self) -> str:
         if not self.id:
             self.id = uuid.uuid4()
-        return self.id
+        return str(self.id)
 
     def validate_password_hash(self, password):
         if self.password_hash:
