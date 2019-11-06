@@ -21,7 +21,6 @@ class User:
     Methods:
         get_safe_id: safe id get, returns a uuid4 if no id is set
         validate_password_hash: Validates raw_password against the users password_hash
-
     """
 
     def __init__(
@@ -31,9 +30,14 @@ class User:
             password_hash: object = None,
             user_id: object = None,
             creation_time: object = None,
-            public_values: object = None,
+            public_values: dict = None,
             private_values: object = None,
     ):
+
+        if public_values is None:
+            self.public_values = []
+        else:
+            self.public_value = public_values
 
         self._initialization_time = False
         self._state = SaveState.dirty
@@ -41,7 +45,6 @@ class User:
         self.username = username
         self.id = user_id
         self.creation_time = creation_time
-        self.public_values = public_values
         self.private_values = private_values
         self.password_hash = password_hash
         self.raw_password = raw_password
@@ -63,7 +66,10 @@ class User:
             raw_password.encode("utf8"), bcrypt.gensalt()
         )
 
-    def __validate__(self, username_req=True, id_req=True, password_req=True):
+    def __validate__(self,
+                     username_req=True,
+                     id_req=True,
+                     password_req=True):
 
         self._initialization_time = datetime.now()
 
@@ -89,10 +95,9 @@ class User:
         except Exception as ex:
             raise UserInitializationFailure(ex)
 
+    # for testability purposes
     def _clear_id(self):
         self.id = None
-    # for testability purposes
-
 
 
 class Session:

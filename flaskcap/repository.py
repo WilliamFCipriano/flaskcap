@@ -7,12 +7,13 @@ from .constants import SaveState
 config = configparser.ConfigParser()
 config.read('config/defaults.ini')
 
+POOL = redis.ConnectionPool(host=config['redis']['hostname'],
+                            port=config['redis']['port'])
+
 
 def _get_connection():
-    return redis.Redis(
-        host=config['redis']['hostname'],
-        port=config['redis']['port']
-    )
+    global POOL
+    return redis.Redis(connection_pool=POOL)
 
 
 def save(obj):
@@ -30,6 +31,7 @@ def _save_user_handler(user):
         r.hset('id_to_password_hash', user.get_safe_id(), user.password_hash)
 
         if user.public_values:
-            r.hset('id_to_user_properties', user.get_safe_id(), json.loads(user.public_values))
+            r.hset('id_to_user_properties', user.get_safe_id(),
+                   json.loads(user.public_values))
 
         user._state = SaveState.clean
