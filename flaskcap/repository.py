@@ -2,11 +2,12 @@ import configparser
 import redis
 import json
 import glob
+from datetime import datetime
 from .objects import User
 from .constants import SaveState
 
 config = configparser.ConfigParser()
-config.read('config/defaults.ini')
+config.read('config/flaskcap.ini')
 
 POOL = redis.ConnectionPool(host=config['redis']['hostname'],
                             port=config['redis']['port'])
@@ -22,15 +23,20 @@ def _get_connection():
 
     if not CON:
         CON = redis.Redis(connection_pool=POOL)
-
-        files = glob.glob('scripts/*.lua')
-
+        files = glob.glob('%s/*.lua' %
+                          config['redis']['scripts_location'])
         for file in files:
-            SCRIPTS[file.replace('.lua', '').replace('scripts\\', '')] \
+            SCRIPTS[file.replace('.lua', '').replace('lua\\', '')] \
                 = CON.register_script(open(file).read())
-
     else:
         return CON
+
+
+def _run_script(script_name, keys=None):
+    if keys is not None:
+        return SCRIPTS[script_name](keys=keys)
+    else:
+        return SCRIPTS[script_name]()
 
 
 def save(obj):
@@ -40,19 +46,13 @@ def save(obj):
 
 def _save_user_handler(user):
     global SCRIPTS
-    r = _get_connection()
 
-    if not r.hget('username_to_id', user.username):
+    _run_script('save_user', keys=[user.username,
+                                   user.get_safe_id(),
+                                   user.password_hash,
+                                   datetime.utcnow().strftime('%x %X')])
 
-        SCRIPTS['new_user'](keys=[user.username,
-                                  user.get_safe_id(),
-                                  user.password_hash])
-
-        if user.public_values:
-            r.hset('id_to_user_properties', user.get_safe_id(),
-                   json.loads(user.public_values))
-
-        user._state = SaveState.clean
+    user._state = SaveState.clean
 
 
 _get_connection()
