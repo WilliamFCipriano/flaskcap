@@ -10,5 +10,6 @@ setup(name='flaskcap',
       author_email='will@willcipriano.com',
       packages=['flaskcap'],
       install_requires=requirements,
-      data_files=[('config', ['config/defaults.ini'])]
+      data_files=[('config', ['config/defaults.ini']),
+                  ('scripts', ['scripts/new_user.lua'])]
       )

@@ -8,3 +8,4 @@ flaskcap\exceptions.py
 flaskcap\objects.py
 flaskcap\repository.py
 flaskcap\requires_auth.py
+scripts\new_user.lua
