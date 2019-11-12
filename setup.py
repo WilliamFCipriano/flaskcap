@@ -11,5 +11,5 @@ setup(name='flaskcap',
       packages=['flaskcap'],
       install_requires=requirements,
       data_files=[('config', ['config/flaskcap.ini']),
-                  ('lua', ['lua/save_user.lua'])]
+                  ('lua', ['lua/save_user.lua', 'lua/get_user.lua'])]
       )

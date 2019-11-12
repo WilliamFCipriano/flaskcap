@@ -1,17 +1,16 @@
 import configparser
 import redis
-import json
-import glob
 from datetime import datetime
 from .objects import User
 from .constants import SaveState
+from ._scripts import get_scripts
 
 config = configparser.ConfigParser()
 config.read('config/flaskcap.ini')
 
 POOL = redis.ConnectionPool(host=config['redis']['hostname'],
                             port=config['redis']['port'])
-CON = None
+CON = False
 
 SCRIPTS = dict()
 
@@ -23,16 +22,17 @@ def _get_connection():
 
     if not CON:
         CON = redis.Redis(connection_pool=POOL)
-        files = glob.glob('%s/*.lua' %
-                          config['redis']['scripts_location'])
-        for file in files:
-            SCRIPTS[file.replace('.lua', '').replace('lua\\', '')] \
-                = CON.register_script(open(file).read())
+        base_scripts = get_scripts()
+        for name in base_scripts:
+            print(name)
+            SCRIPTS[name] \
+                = CON.register_script(base_scripts[name])
     else:
         return CON
 
 
 def _run_script(script_name, keys=None):
+    global SCRIPTS
     if keys is not None:
         return SCRIPTS[script_name](keys=keys)
     else:
@@ -40,8 +40,14 @@ def _run_script(script_name, keys=None):
 
 
 def save(obj):
+    connection = _get_connection()
     if isinstance(obj, User):
         _save_user_handler(obj)
+
+
+def get_user(id):
+    global SCRIPTS
+    user_string = _run_script('get_user', keys=[id])
 
 
 def _save_user_handler(user):
@@ -53,6 +59,3 @@ def _save_user_handler(user):
                                    datetime.utcnow().strftime('%x %X')])
 
     user._state = SaveState.clean
-
-
-_get_connection()

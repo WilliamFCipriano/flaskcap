@@ -3,9 +3,11 @@ requirements.txt
 setup.py
 config\flaskcap.ini
 flaskcap\__init__.py
+flaskcap\_scripts.py
 flaskcap\constants.py
 flaskcap\exceptions.py
 flaskcap\objects.py
 flaskcap\repository.py
 flaskcap\requires_auth.py
+lua\get_user.lua
 lua\save_user.lua
